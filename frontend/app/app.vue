@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 
-
 const form = ref({
   nombre: '',
   fechaNacimiento: '',
@@ -10,7 +9,6 @@ const form = ref({
   email: '',
   password: '',
 })
-
 
 const opcionesAlergias = [
   'Polen de olivo', 
@@ -27,15 +25,42 @@ const cargando = ref(false)
 
 const handleRegistro = async () => {
   cargando.value = true
-  console.log('Enviando datos a Django:', form.value)
   
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/registro/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(form.value)
+    })
 
-  setTimeout(() => {
+    if (response.ok) {
+      const data = await response.json()
+      console.log('Respuesta del servidor:', data)
+      form.value = {
+        nombre: '',
+        fechaNacimiento: '',
+        ubicacion: '',
+        alergias: [],
+        email: '',
+        password: ''
+      }
+
+
+    } else {
+      const errorData = await response.json()
+      console.error('Error del servidor:', errorData)
+    }
+
+    
+  } catch (error) {
+    console.error('Error de conexión:', error)
+  } finally {
     cargando.value = false
-  }, 1000)
+  }
 }
 </script>
-
 
 <template>
   <div class="registration-container">
@@ -88,8 +113,6 @@ const handleRegistro = async () => {
     </div>
   </div>
 </template>
-
-
 
 <style scoped>
   .registration-container {
